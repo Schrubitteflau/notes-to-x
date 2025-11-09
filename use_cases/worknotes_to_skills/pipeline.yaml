@@ -1,0 +1,46 @@
+preset: skills
+description: Extract skills and achievements from work notes
+
+# Pipeline stages
+pipeline:
+  # Stage 1: Load markdown file content
+  - kind: load.markdown
+    options:
+      parse_frontmatter: false
+
+  # Stage 2: Segment by H1 headers (# Title)
+  - kind: segment.by_title
+    options:
+      level: 1
+
+  # Stage 3: Extract date from title
+  - kind: enrich.date_from_title
+    options:
+      pattern: '(\d{2}/\d{2}/\d{4})'
+      format: '%d/%m/%Y'
+      required: false
+
+  # Stage 4: Build system prompt from template
+  - kind: transform.prompt
+    options:
+      template: "prompt.jinja2"
+      system_prompt: true
+      required_vars:
+        - CAREER_CONTEXT
+        - NOTES_LANGUAGE
+
+  # Stage 5: Build user message
+  - kind: transform.build_user_message
+    options:
+      include_date: true
+
+  # Stage 6: Call LLM
+  - kind: llm.call
+    options:
+      model: "{{ MODEL }}"
+      temperature: 0.2
+      response_format: json
+      mock: true  # Set to false to use real LLM calls
+
+  # Note: Output is now handled automatically by the CLI
+  # Results are saved to timestamped directories in pipeline_output/

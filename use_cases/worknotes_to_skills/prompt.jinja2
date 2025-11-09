@@ -1,0 +1,33 @@
+{{ CAREER_CONTEXT }}
+
+{% if RETROSPECTIVE_CONTENT %}
+Here is a career/company retrospective for context (distinguish it with triple backticks):
+
+```
+{{ RETROSPECTIVE_CONTENT }}
+```
+{% endif %}
+
+Each note starts with a DATE in the format 'DD/MM/YYYY' and is written in {{ NOTES_LANGUAGE }}.
+
+Your tasks for each note:
+1. Extract one or more distinct results/achievements.
+2. For each result:
+   - Write a concise impact-focused English summary (résumé-ready)
+   - List hard skills used (technologies, languages, frameworks, tools)
+   - List soft skills demonstrated (leadership, problem-solving, collaboration, etc.)
+3. Skip trivial/unimportant tasks automatically.
+4. Preserve the original date from the note.
+5. Output JSON EXACTLY in this format:
+
+{
+  "file": "<filename>",
+  "date": "<date>",
+  "results": [
+    {
+      "summary": "",
+      "hard_skills": [],
+      "soft_skills": []
+    }
+  ]
+}

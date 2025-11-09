@@ -1,7 +1,8 @@
 """Pipeline execution engine."""
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
+
 from .context import Context
 from .stage import Stage, get_stage
 
@@ -19,12 +20,7 @@ class Pipeline:
     - Stage finalization
     """
 
-    def __init__(
-        self,
-        stages: List[Stage],
-        fail_fast: bool = True,
-        verbose: bool = True
-    ):
+    def __init__(self, stages: list[Stage], fail_fast: bool = True, verbose: bool = True):
         """
         Initialize pipeline with configured stages.
 
@@ -38,7 +34,7 @@ class Pipeline:
         self.fail_fast = fail_fast
         self.verbose = verbose
 
-    def execute(self, contexts: List[Context]) -> List[Context]:
+    def execute(self, contexts: list[Context]) -> list[Context]:
         """
         Execute pipeline on initial contexts.
 
@@ -111,7 +107,7 @@ class Pipeline:
 
         return current_contexts
 
-    def _execute_stage(self, stage: Stage, contexts: List[Context]) -> List[Context]:
+    def _execute_stage(self, stage: Stage, contexts: list[Context]) -> list[Context]:
         """
         Execute a single stage on all contexts.
 
@@ -142,7 +138,7 @@ class Pipeline:
         return results
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any], **kwargs) -> 'Pipeline':
+    def from_config(cls, config: dict[str, Any], **kwargs) -> "Pipeline":
         """
         Create pipeline from configuration dictionary.
 
@@ -173,7 +169,7 @@ class Pipeline:
 
         return cls(stages, **kwargs)
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """
         Get pipeline execution summary.
 

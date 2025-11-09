@@ -7,27 +7,26 @@ This module must be imported to make stages available to the pipeline.
 # Import all stages to trigger registration
 
 # Sources
-from .sources.folder import FolderSource
+from .enrichers.date_from_filename_enricher import DateFromFilenameEnricher
+
+# Enrichers
+from .enrichers.date_from_title_enricher import DateFromTitleEnricher
+from .enrichers.metadata_enricher import MetadataEnricher
 
 # Loaders
 from .loaders.markdown_loader import MarkdownLoader
 from .loaders.plaintext_loader import PlaintextLoader
+from .segmenters.by_delimiter_segmenter import ByDelimiterSegmenter
+from .segmenters.by_title_segmenter import ByTitleSegmenter
 
 # Segmenters
 from .segmenters.single_segmenter import SingleSegmenter
-from .segmenters.by_title_segmenter import ByTitleSegmenter
-from .segmenters.by_delimiter_segmenter import ByDelimiterSegmenter
-
-# Enrichers
-from .enrichers.date_from_title_enricher import DateFromTitleEnricher
-from .enrichers.date_from_filename_enricher import DateFromFilenameEnricher
-from .enrichers.metadata_enricher import MetadataEnricher
+from .sources.folder import FolderSource
+from .transforms.llm import LLMCaller
 
 # Transforms
 from .transforms.prompt_builder import PromptBuilder
 from .transforms.user_message_builder import UserMessageBuilder
-from .transforms.llm import LLMCaller
-
 
 __all__ = [
     # Sources

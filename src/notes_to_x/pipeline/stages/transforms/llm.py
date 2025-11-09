@@ -1,33 +1,22 @@
 """LLM calling via LiteLLM."""
 
 import json
-from typing import Literal, Optional
-from pydantic import Field
+from typing import Literal
+
 from litellm import completion
+from pydantic import Field
+
 from ...core import Context, Stage, StageOptions, register_stage
 
 
 class LLMCallerOptions(StageOptions):
     """Options for LLMCaller stage."""
+
     model: str = Field(..., description="LLM model identifier (e.g., 'openai/gpt-4')")
-    temperature: float = Field(
-        default=0.2,
-        description="Temperature for LLM sampling",
-        ge=0.0,
-        le=2.0
-    )
-    response_format: Literal["json", "text"] = Field(
-        default="json",
-        description="Expected response format"
-    )
-    max_tokens: Optional[int] = Field(
-        default=None,
-        description="Max tokens in response"
-    )
-    mock: bool = Field(
-        default=False,
-        description="Use mock mode to skip actual LLM calls (for testing)"
-    )
+    temperature: float = Field(default=0.2, description="Temperature for LLM sampling", ge=0.0, le=2.0)
+    response_format: Literal["json", "text"] = Field(default="json", description="Expected response format")
+    max_tokens: int | None = Field(default=None, description="Max tokens in response")
+    mock: bool = Field(default=False, description="Use mock mode to skip actual LLM calls (for testing)")
 
 
 @register_stage("llm.call")
@@ -118,7 +107,7 @@ class LLMCaller(Stage[LLMCallerOptions]):
                 {
                     "summary": f"[MOCK] Extracted achievement from note (date: {date}). This is simulated output for testing without API calls.",
                     "hard_skills": ["Python", "JavaScript", "API Design", "Testing"],
-                    "soft_skills": ["Problem-solving", "Technical communication", "Time management"]
+                    "soft_skills": ["Problem-solving", "Technical communication", "Time management"],
                 }
-            ]
+            ],
         }

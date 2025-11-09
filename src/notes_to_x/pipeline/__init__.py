@@ -5,23 +5,22 @@ This module provides a flexible, stage-based pipeline for transforming notes.
 """
 
 # Import core components
+# Import all stages to trigger registration
+from . import stages
 from .core import (
     Context,
     FileContext,
-    NoteContext,
     MetaContext,
-    Stage,
-    register_stage,
-    get_stage,
-    list_stages,
-    get_stage_info,
+    NoteContext,
     Pipeline,
-    load_pipeline_config,
+    Stage,
+    get_stage,
+    get_stage_info,
+    list_stages,
     load_config_from_preset,
+    load_pipeline_config,
+    register_stage,
 )
-
-# Import all stages to trigger registration
-from . import stages
 
 __all__ = [
     "Context",

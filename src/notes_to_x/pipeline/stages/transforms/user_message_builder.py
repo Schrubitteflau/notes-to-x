@@ -1,23 +1,16 @@
 """Build user message for LLM from note content."""
 
 from pydantic import Field
+
 from ...core import Context, Stage, StageOptions, register_stage
 
 
 class UserMessageBuilderOptions(StageOptions):
     """Options for UserMessageBuilder stage."""
-    include_date: bool = Field(
-        default=True,
-        description="Include date in message"
-    )
-    date_label: str = Field(
-        default="DATE",
-        description="Label for date field"
-    )
-    content_label: str = Field(
-        default="CONTENT",
-        description="Label for content field"
-    )
+
+    include_date: bool = Field(default=True, description="Include date in message")
+    date_label: str = Field(default="DATE", description="Label for date field")
+    content_label: str = Field(default="CONTENT", description="Label for content field")
 
 
 @register_stage("transform.build_user_message")

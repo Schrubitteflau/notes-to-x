@@ -1,26 +1,21 @@
 """Prompt building from Jinja2 templates."""
 
 import os
-from typing import List
+
+from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound
 from pydantic import Field
-from jinja2 import Template, Environment, FileSystemLoader, TemplateNotFound
+
 from ...core import Context, Stage, StageOptions, register_stage
 
 
 class PromptBuilderOptions(StageOptions):
     """Options for PromptBuilder stage."""
+
     template: str = Field(..., description="Path to template file or inline template")
-    template_inline: bool = Field(
-        default=False,
-        description="If True, treat 'template' as inline content"
-    )
-    required_vars: List[str] = Field(
-        default_factory=list,
-        description="Variables that must be present"
-    )
+    template_inline: bool = Field(default=False, description="If True, treat 'template' as inline content")
+    required_vars: list[str] = Field(default_factory=list, description="Variables that must be present")
     system_prompt: bool = Field(
-        default=True,
-        description="If True, store in ctx.custom['system_prompt'], else 'user_prompt'"
+        default=True, description="If True, store in ctx.custom['system_prompt'], else 'user_prompt'"
     )
 
 
@@ -48,9 +43,7 @@ class PromptBuilder(Stage[PromptBuilderOptions]):
         missing_vars = [var for var in required_vars if var not in template_ctx]
         if missing_vars:
             ctx.add_issue(
-                f"Missing required template variables: {', '.join(missing_vars)}",
-                self.name,
-                severity="warning"
+                f"Missing required template variables: {', '.join(missing_vars)}", self.name, severity="warning"
             )
 
         # Render template
@@ -106,7 +99,7 @@ class PromptBuilder(Stage[PromptBuilderOptions]):
             # Load from absolute/cwd path
             template_dir = os.path.dirname(template_path)
             template_file = os.path.basename(template_path)
-            env = Environment(loader=FileSystemLoader(template_dir or '.'))
+            env = Environment(loader=FileSystemLoader(template_dir or "."))
             try:
                 template = env.get_template(template_file)
                 return template.render(context)
@@ -125,6 +118,5 @@ class PromptBuilder(Stage[PromptBuilderOptions]):
             return template.render(context)
         except TemplateNotFound:
             raise FileNotFoundError(
-                f"Template not found: {template_name}\n"
-                f"  Searched in: {template_path}, {templates_dir}"
+                f"Template not found: {template_name}\n  Searched in: {template_path}, {templates_dir}"
             )

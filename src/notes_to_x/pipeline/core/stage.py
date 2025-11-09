@@ -1,18 +1,21 @@
 """Stage abstraction and registry system."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Type, Union, Generic, TypeVar
+from typing import Any, Generic, TypeVar
+
 from pydantic import BaseModel, ValidationError
+
 from .context import Context
 
 
 class StageOptions(BaseModel):
     """Base options model for stages. Override in subclasses."""
+
     pass
 
 
 # Type variable for generic stage options
-TOptions = TypeVar('TOptions', bound=StageOptions)
+TOptions = TypeVar("TOptions", bound=StageOptions)
 
 
 class Stage(ABC, Generic[TOptions]):
@@ -31,9 +34,9 @@ class Stage(ABC, Generic[TOptions]):
     """
 
     # Override this in subclasses with a Pydantic model
-    Options: Type[TOptions] = StageOptions
+    Options: type[TOptions] = StageOptions
 
-    def __init__(self, options: Dict[str, Any]):
+    def __init__(self, options: dict[str, Any]):
         """
         Initialize stage with options from config.
 
@@ -47,12 +50,10 @@ class Stage(ABC, Generic[TOptions]):
             # Validate and parse options using Pydantic model
             self.options: TOptions = self.Options(**options)
         except ValidationError as e:
-            raise ValueError(
-                f"Invalid options for {self.__class__.__name__}: {e}"
-            ) from e
+            raise ValueError(f"Invalid options for {self.__class__.__name__}: {e}") from e
 
     @abstractmethod
-    def execute(self, ctx: Context) -> Union[Context, List[Context]]:
+    def execute(self, ctx: Context) -> Context | list[Context]:
         """
         Execute stage logic on a context.
 
@@ -85,7 +86,7 @@ class Stage(ABC, Generic[TOptions]):
 
 
 # Global stage registry
-STAGE_REGISTRY: Dict[str, Type[Stage]] = {}
+STAGE_REGISTRY: dict[str, type[Stage]] = {}
 
 
 def register_stage(kind: str):
@@ -100,12 +101,13 @@ def register_stage(kind: str):
     Args:
         kind: Dot-separated stage identifier (e.g., "load.markdown")
     """
-    def decorator(cls: Type[Stage]):
+
+    def decorator(cls: type[Stage]):
         if kind in STAGE_REGISTRY:
             raise ValueError(f"Stage '{kind}' is already registered")
 
         if not issubclass(cls, Stage):
-            raise TypeError(f"Stage class must inherit from Stage")
+            raise TypeError("Stage class must inherit from Stage")
 
         STAGE_REGISTRY[kind] = cls
         return cls
@@ -113,7 +115,7 @@ def register_stage(kind: str):
     return decorator
 
 
-def get_stage(kind: str, options: Dict[str, Any]) -> Stage:
+def get_stage(kind: str, options: dict[str, Any]) -> Stage:
     """
     Create a stage instance from registry.
 
@@ -129,20 +131,17 @@ def get_stage(kind: str, options: Dict[str, Any]) -> Stage:
     """
     if kind not in STAGE_REGISTRY:
         available = ", ".join(sorted(STAGE_REGISTRY.keys()))
-        raise ValueError(
-            f"Unknown stage kind: '{kind}'. "
-            f"Available stages: {available}"
-        )
+        raise ValueError(f"Unknown stage kind: '{kind}'. Available stages: {available}")
 
     return STAGE_REGISTRY[kind](options)
 
 
-def list_stages() -> List[str]:
+def list_stages() -> list[str]:
     """List all registered stage kinds."""
     return sorted(STAGE_REGISTRY.keys())
 
 
-def get_stage_info(kind: str) -> Dict[str, Any]:
+def get_stage_info(kind: str) -> dict[str, Any]:
     """
     Get information about a registered stage.
 

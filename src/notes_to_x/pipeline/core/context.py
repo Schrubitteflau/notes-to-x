@@ -1,38 +1,41 @@
 """Context dataclasses for pipeline flow."""
 
-from dataclasses import dataclass, field, asdict
-from typing import Any, Dict, List, Optional, Literal
-from datetime import datetime
 from copy import deepcopy
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from typing import Any, Literal
 
 
 @dataclass
 class FileContext:
     """File-level information."""
+
     path: str
     name: str
     extension: str
-    content: Optional[str] = None
-    markdown_properties: Dict[str, Any] = field(default_factory=dict)
+    content: str | None = None
+    markdown_properties: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class NoteContext:
     """Note-level information (a file may contain multiple notes)."""
-    title: Optional[str] = None
-    content: Optional[str] = None
-    date: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    results: List[Any] = field(default_factory=list)
+
+    title: str | None = None
+    content: str | None = None
+    date: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    results: list[Any] = field(default_factory=list)
 
 
 @dataclass
 class MetaContext:
     """Pipeline execution metadata."""
+
     preset: str = ""
-    processed_by: List[str] = field(default_factory=list)
-    warnings: List[Dict[str, Any]] = field(default_factory=list)
-    errors: List[Dict[str, Any]] = field(default_factory=list)
+    processed_by: list[str] = field(default_factory=list)
+    warnings: list[dict[str, Any]] = field(default_factory=list)
+    errors: list[dict[str, Any]] = field(default_factory=list)
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
@@ -44,12 +47,13 @@ class Context:
     Stages transform this context as it moves through the pipeline.
     Supports immutable cloning for 1:N splits.
     """
+
     file: FileContext
     note: NoteContext
     meta: MetaContext
-    custom: Dict[str, Any] = field(default_factory=dict)
+    custom: dict[str, Any] = field(default_factory=dict)
 
-    def clone(self, **overrides) -> 'Context':
+    def clone(self, **overrides) -> "Context":
         """
         Create a deep copy of this context with optional field overrides.
 
@@ -59,10 +63,7 @@ class Context:
         """
         # Deep copy to avoid shared references
         new_ctx = Context(
-            file=deepcopy(self.file),
-            note=deepcopy(self.note),
-            meta=deepcopy(self.meta),
-            custom=deepcopy(self.custom)
+            file=deepcopy(self.file), note=deepcopy(self.note), meta=deepcopy(self.meta), custom=deepcopy(self.custom)
         )
 
         # Apply overrides
@@ -89,12 +90,7 @@ class Context:
             severity = "error" if self.options.required else "warning"
             ctx.add_issue("No data found", self.name, severity=severity)
         """
-        issue = {
-            "stage": stage,
-            "message": message,
-            "timestamp": datetime.now().isoformat(),
-            **extra
-        }
+        issue = {"stage": stage, "message": message, "timestamp": datetime.now().isoformat(), **extra}
 
         if severity == "error":
             self.meta.errors.append(issue)
@@ -144,19 +140,20 @@ class Context:
 
         return current
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert context to dictionary for serialization."""
         return asdict(self)
 
     @classmethod
-    def from_file_path(cls, path: str, preset: str = "") -> 'Context':
+    def from_file_path(cls, path: str, preset: str = "") -> "Context":
         """Create a minimal context from a file path."""
         import os
+
         name = os.path.basename(path)
         extension = os.path.splitext(path)[1]
 
         return cls(
             file=FileContext(path=path, name=name, extension=extension),
             note=NoteContext(),
-            meta=MetaContext(preset=preset)
+            meta=MetaContext(preset=preset),
         )

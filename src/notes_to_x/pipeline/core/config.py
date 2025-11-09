@@ -1,12 +1,13 @@
 """Pipeline configuration loading and validation."""
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
+
 import yaml
 from jinja2 import Template
 
 
-def load_pipeline_config(config_path: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def load_pipeline_config(config_path: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
     """
     Load and parse pipeline configuration from YAML file.
 
@@ -26,7 +27,7 @@ def load_pipeline_config(config_path: str, variables: Optional[Dict[str, Any]] =
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
-    with open(config_path, 'r', encoding='utf-8') as f:
+    with open(config_path, encoding="utf-8") as f:
         config_content = f.read()
 
     # Apply Jinja2 templating if variables provided
@@ -36,7 +37,7 @@ def load_pipeline_config(config_path: str, variables: Optional[Dict[str, Any]] =
     template = Template(config_content)
     config_content = template.render(
         **variables,
-        env=os.environ  # Allow access to environment variables
+        env=os.environ,  # Allow access to environment variables
     )
 
     # Parse YAML
@@ -48,7 +49,7 @@ def load_pipeline_config(config_path: str, variables: Optional[Dict[str, Any]] =
     return config
 
 
-def validate_config(config: Dict[str, Any]):
+def validate_config(config: dict[str, Any]):
     """
     Validate pipeline configuration structure.
 
@@ -83,7 +84,7 @@ def validate_config(config: Dict[str, Any]):
             raise ValueError(f"Stage {i} 'options' must be a dictionary")
 
 
-def load_config_from_preset(preset_name: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def load_config_from_preset(preset_name: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
     """
     Load pipeline config from preset name.
 

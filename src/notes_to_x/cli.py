@@ -1,16 +1,15 @@
 """CLI for running note processing pipelines."""
 
-import os
-import sys
 import json
 import logging
-from typing import Optional, List
+import os
+import sys
 from datetime import datetime
 
 import typer
 from dotenv import load_dotenv
 
-from .pipeline.core import Pipeline, Context
+from .pipeline.core import Context, Pipeline
 from .pipeline.core.config import load_pipeline_config
 from .pipeline.stages.sources.folder import FolderSource
 
@@ -36,7 +35,7 @@ def run(
         "-o",
         help="Output directory for results (default: ./pipeline_output)",
     ),
-    env_file: Optional[str] = typer.Option(
+    env_file: str | None = typer.Option(
         None,
         "--env",
         "-e",
@@ -60,12 +59,12 @@ def run(
     log_level = logging.INFO if verbose else logging.WARNING
     logging.basicConfig(
         level=log_level,
-        format='%(message)s',  # Simple format for console output
-        force=True  # Override any existing configuration
+        format="%(message)s",  # Simple format for console output
+        force=True,  # Override any existing configuration
     )
 
     # Capture actual command that was run
-    command_args = ' '.join(sys.argv)
+    command_args = " ".join(sys.argv)
 
     # Load environment variables
     config_dir = os.path.dirname(os.path.abspath(config_path))
@@ -80,14 +79,14 @@ def run(
             typer.echo(f"Loading environment from: {env_path}")
         load_dotenv(env_path)
         # Capture loaded env vars (excluding sensitive API keys)
-        with open(env_path, 'r') as f:
+        with open(env_path) as f:
             for line in f:
                 line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
                     key = key.strip()
                     # Mask API keys
-                    if 'API_KEY' in key or 'SECRET' in key or 'PASSWORD' in key:
+                    if "API_KEY" in key or "SECRET" in key or "PASSWORD" in key:
                         loaded_env_vars[key] = "***MASKED***"
                     else:
                         loaded_env_vars[key] = value.strip()
@@ -106,7 +105,7 @@ def run(
         raise typer.Exit(1)
 
     # Create initial contexts from source
-    contexts: List[Context] = []
+    contexts: list[Context] = []
     if source:
         # Override source from command line
         source_path = os.path.abspath(source)
@@ -118,11 +117,13 @@ def run(
                 typer.echo(f"Processing single file: {source_path}")
         elif os.path.isdir(source_path):
             # Directory - use FolderSource to collect files
-            folder_source = FolderSource({
-                "path": source_path,
-                "extensions": [".md", ".txt"],
-                "recursive": True,
-            })
+            folder_source = FolderSource(
+                {
+                    "path": source_path,
+                    "extensions": [".md", ".txt"],
+                    "recursive": True,
+                }
+            )
             contexts = folder_source.generate()
             if verbose:
                 typer.echo(f"Found {len(contexts)} files in: {source_path}")
@@ -186,7 +187,7 @@ def run(
 
             # Write output.json (user-facing results)
             output_json_path = os.path.join(run_output_dir, "output.json")
-            with open(output_json_path, 'w', encoding='utf-8') as f:
+            with open(output_json_path, "w", encoding="utf-8") as f:
                 json.dump(user_output, f, indent=2, ensure_ascii=False)
 
             # Write result.json (full execution metadata)
@@ -212,11 +213,11 @@ def run(
             }
 
             result_json_path = os.path.join(run_output_dir, "result.json")
-            with open(result_json_path, 'w', encoding='utf-8') as f:
+            with open(result_json_path, "w", encoding="utf-8") as f:
                 json.dump(result_json, f, indent=2, ensure_ascii=False)
 
             if verbose:
-                typer.echo(f"\n✓ Pipeline completed successfully!")
+                typer.echo("\n✓ Pipeline completed successfully!")
                 typer.echo(f"  Processed: {len(result_contexts)} contexts")
                 typer.echo(f"  Duration: {execution_duration:.2f}s")
                 if error_count:
@@ -225,7 +226,7 @@ def run(
                     typer.echo(f"  Warnings: {warning_count}")
                 typer.echo(f"\n📁 Output directory: {run_output_dir}")
                 typer.echo(f"  - output.json: User-facing results ({len(user_output)} items)")
-                typer.echo(f"  - result.json: Full execution details")
+                typer.echo("  - result.json: Full execution details")
 
         finally:
             os.chdir(original_cwd)
@@ -237,6 +238,7 @@ def run(
         typer.echo(f"\n✗ Unexpected error: {e}", err=True)
         if verbose:
             import traceback
+
             traceback.print_exc()
         raise typer.Exit(1)
 
@@ -244,7 +246,7 @@ def run(
 @app.command()
 def list_stages():
     """List all available pipeline stages."""
-    from .pipeline.core import list_stages, get_stage_info
+    from .pipeline.core import get_stage_info, list_stages
 
     typer.echo("Available pipeline stages:\n")
 
@@ -252,9 +254,9 @@ def list_stages():
         info = get_stage_info(kind)
         typer.echo(f"  {kind}")
         typer.echo(f"    Class: {info['class']}")
-        if info['docstring']:
+        if info["docstring"]:
             # First line of docstring
-            first_line = info['docstring'].strip().split('\n')[0]
+            first_line = info["docstring"].strip().split("\n")[0]
             typer.echo(f"    {first_line}")
         typer.echo()
 

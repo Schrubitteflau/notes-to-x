@@ -1,26 +1,19 @@
 """Source stage for loading files from a folder."""
 
 import os
-from typing import List
+
 from pydantic import Field, field_validator
-from ...core import Context, FileContext, NoteContext, MetaContext, Stage, StageOptions, register_stage
+
+from ...core import Context, FileContext, MetaContext, NoteContext, Stage, StageOptions, register_stage
 
 
 class FolderSourceOptions(StageOptions):
     """Options for FolderSource stage."""
+
     path: str = Field(..., description="Path to folder")
-    extensions: List[str] = Field(
-        default=[".md", ".txt"],
-        description="File extensions to include"
-    )
-    recursive: bool = Field(
-        default=True,
-        description="Whether to search recursively"
-    )
-    preset: str = Field(
-        default="",
-        description="Preset identifier for metadata"
-    )
+    extensions: list[str] = Field(default=[".md", ".txt"], description="File extensions to include")
+    recursive: bool = Field(default=True, description="Whether to search recursively")
+    preset: str = Field(default="", description="Preset identifier for metadata")
 
     @field_validator("path")
     @classmethod
@@ -44,7 +37,7 @@ class FolderSource(Stage[FolderSourceOptions]):
 
     Options = FolderSourceOptions
 
-    def generate(self) -> List[Context]:
+    def generate(self) -> list[Context]:
         """
         Generate contexts from files in the folder.
 
@@ -77,7 +70,7 @@ class FolderSource(Stage[FolderSourceOptions]):
 
         return contexts
 
-    def execute(self, ctx: Context) -> List[Context]:
+    def execute(self, ctx: Context) -> list[Context]:
         """
         Execute stage (for pipeline compatibility).
 
@@ -91,13 +84,9 @@ class FolderSource(Stage[FolderSourceOptions]):
         extension = os.path.splitext(filepath)[1]
 
         return Context(
-            file=FileContext(
-                path=filepath,
-                name=name,
-                extension=extension
-            ),
+            file=FileContext(path=filepath, name=name, extension=extension),
             note=NoteContext(),
-            meta=MetaContext(preset=preset)
+            meta=MetaContext(preset=preset),
         )
 
 

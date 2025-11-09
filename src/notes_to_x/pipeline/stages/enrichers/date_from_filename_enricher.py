@@ -1,19 +1,18 @@
 """Extract date from filename."""
 
 import re
-from typing import Optional
 from datetime import datetime
+
 from pydantic import Field
+
 from ...core import Context, Stage, StageOptions, register_stage
 
 
 class DateFromFilenameEnricherOptions(StageOptions):
     """Options for DateFromFilenameEnricher stage."""
+
     pattern: str = Field(..., description="Regex pattern with capture group for date")
-    format: Optional[str] = Field(
-        default=None,
-        description="strptime format string for validation"
-    )
+    format: str | None = Field(default=None, description="strptime format string for validation")
 
 
 @register_stage("enrich.date_from_filename")
@@ -44,9 +43,7 @@ class DateFromFilenameEnricher(Stage[DateFromFilenameEnricherOptions]):
                 datetime.strptime(date_str, date_format)
             except ValueError as e:
                 ctx.add_issue(
-                    f"Date '{date_str}' doesn't match format '{date_format}': {e}",
-                    self.name,
-                    severity="error"
+                    f"Date '{date_str}' doesn't match format '{date_format}': {e}", self.name, severity="error"
                 )
                 return ctx
 

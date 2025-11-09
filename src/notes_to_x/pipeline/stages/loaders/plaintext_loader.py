@@ -1,6 +1,6 @@
 """Plain text file loader."""
 
-from ...core import Context, Stage, StageOptions, register_stage, read_file_content
+from ...core import Context, Stage, StageOptions, read_file_content, register_stage
 
 
 @register_stage("load.plaintext")

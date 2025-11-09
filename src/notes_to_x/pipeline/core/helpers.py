@@ -1,10 +1,10 @@
 """Helper functions for common stage operations."""
 
-from typing import Optional
+
 from .context import Context
 
 
-def read_file_content(ctx: Context, stage_name: str) -> Optional[str]:
+def read_file_content(ctx: Context, stage_name: str) -> str | None:
     """
     Read file content from ctx.file.path.
 
@@ -19,7 +19,7 @@ def read_file_content(ctx: Context, stage_name: str) -> Optional[str]:
         Adds error to context if file reading fails
     """
     try:
-        with open(ctx.file.path, 'r', encoding='utf-8') as f:
+        with open(ctx.file.path, encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         ctx.add_issue(f"Failed to read file: {e}", stage_name, severity="error")

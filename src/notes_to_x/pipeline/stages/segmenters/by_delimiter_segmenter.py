@@ -1,17 +1,16 @@
 """Segment content by custom delimiter pattern."""
 
 import re
-from typing import List
+
 from pydantic import Field
+
 from ...core import Context, NoteContext, Stage, StageOptions, register_stage
 
 
 class ByDelimiterSegmenterOptions(StageOptions):
     """Options for ByDelimiterSegmenter stage."""
-    pattern: str = Field(
-        default="^---$",
-        description="Regex pattern to split on"
-    )
+
+    pattern: str = Field(default="^---$", description="Regex pattern to split on")
 
 
 @register_stage("segment.by_delimiter")
@@ -22,7 +21,7 @@ class ByDelimiterSegmenter(Stage[ByDelimiterSegmenterOptions]):
 
     Options = ByDelimiterSegmenterOptions
 
-    def execute(self, ctx: Context) -> List[Context]:
+    def execute(self, ctx: Context) -> list[Context]:
         """Split content by delimiter."""
         if not ctx.file.content:
             ctx.add_issue("No content to segment", self.name, severity="warning")
@@ -38,12 +37,7 @@ class ByDelimiterSegmenter(Stage[ByDelimiterSegmenterOptions]):
             if not part:
                 continue
 
-            new_ctx = ctx.clone(
-                note=NoteContext(
-                    title=f"Segment {i+1}",
-                    content=part
-                )
-            )
+            new_ctx = ctx.clone(note=NoteContext(title=f"Segment {i + 1}", content=part))
             contexts.append(new_ctx)
 
         return contexts if contexts else [ctx]

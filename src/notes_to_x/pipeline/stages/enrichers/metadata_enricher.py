@@ -1,16 +1,15 @@
 """Add custom metadata to note from frontmatter or custom logic."""
 
-from typing import Dict
+
 from pydantic import Field
+
 from ...core import Context, Stage, StageOptions, register_stage
 
 
 class MetadataEnricherOptions(StageOptions):
     """Options for MetadataEnricher stage."""
-    fields: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Map of field names to source paths"
-    )
+
+    fields: dict[str, str] = Field(default_factory=dict, description="Map of field names to source paths")
 
 
 @register_stage("enrich.metadata")

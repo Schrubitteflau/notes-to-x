@@ -1,18 +1,18 @@
 """Markdown file loader with optional frontmatter parsing."""
 
 import re
+from typing import Any
+
 import yaml
-from typing import Dict, Any
 from pydantic import Field
-from ...core import Context, Stage, StageOptions, register_stage, read_file_content
+
+from ...core import Context, Stage, StageOptions, read_file_content, register_stage
 
 
 class MarkdownLoaderOptions(StageOptions):
     """Options for MarkdownLoader stage."""
-    parse_frontmatter: bool = Field(
-        default=False,
-        description="Whether to parse YAML frontmatter"
-    )
+
+    parse_frontmatter: bool = Field(default=False, description="Whether to parse YAML frontmatter")
 
 
 @register_stage("load.markdown")
@@ -44,7 +44,7 @@ class MarkdownLoader(Stage[MarkdownLoaderOptions]):
 
         return ctx
 
-    def _parse_frontmatter(self, content: str) -> tuple[str, Dict[str, Any], str]:
+    def _parse_frontmatter(self, content: str) -> tuple[str, dict[str, Any], str]:
         """
         Parse YAML frontmatter from markdown content.
 
@@ -52,21 +52,21 @@ class MarkdownLoader(Stage[MarkdownLoaderOptions]):
             Tuple of (content without frontmatter, properties dict, error message or empty string)
         """
         # Match YAML frontmatter pattern: ---\n...\n---
-        pattern = r'^---\s*\n(.*?)\n---\s*\n'
+        pattern = r"^---\s*\n(.*?)\n---\s*\n"
         match = re.match(pattern, content, re.DOTALL)
 
         if not match:
             return content, {}, ""
 
         frontmatter_text = match.group(1)
-        content_without_frontmatter = content[match.end():]
+        content_without_frontmatter = content[match.end() :]
 
         # Parse YAML properly using PyYAML
         try:
             properties = yaml.safe_load(frontmatter_text) or {}
             # Ensure we return a dict (in case YAML contains non-dict at root)
             if not isinstance(properties, dict):
-                properties = {'data': properties}
+                properties = {"data": properties}
             return content_without_frontmatter, properties, ""
         except yaml.YAMLError as e:
             # If YAML parsing fails, return empty dict and error message

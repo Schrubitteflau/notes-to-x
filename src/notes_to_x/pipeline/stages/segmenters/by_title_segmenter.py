@@ -54,7 +54,7 @@ class ByTitleSegmenter(Stage[ByTitleSegmenterOptions]):
         """
         # Pattern for headers of exact level (e.g., # Title but not ## Title)
         # Need to match start of line, exact number of #, space, then title
-        pattern = f'^{"#" * level}\\s+(.+)$'
+        pattern = f"^{'#' * level}\\s+(.+)$"
 
         segments = []
         lines = content.split("\n")

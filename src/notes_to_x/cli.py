@@ -102,7 +102,7 @@ def run(
 
     except Exception as e:
         typer.echo(f"Error loading pipeline config: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
     # Create initial contexts from source
     contexts: list[Context] = []
@@ -233,14 +233,14 @@ def run(
 
     except RuntimeError as e:
         typer.echo(f"\n✗ Pipeline failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     except Exception as e:
         typer.echo(f"\n✗ Unexpected error: {e}", err=True)
         if verbose:
             import traceback
 
             traceback.print_exc()
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()

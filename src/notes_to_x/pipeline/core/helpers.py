@@ -1,6 +1,5 @@
 """Helper functions for common stage operations."""
 
-
 from .context import Context
 
 

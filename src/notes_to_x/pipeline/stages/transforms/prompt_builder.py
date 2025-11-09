@@ -116,7 +116,7 @@ class PromptBuilder(Stage[PromptBuilderOptions]):
         try:
             template = env.get_template(template_name)
             return template.render(context)
-        except TemplateNotFound:
+        except TemplateNotFound as e:
             raise FileNotFoundError(
                 f"Template not found: {template_name}\n  Searched in: {template_path}, {templates_dir}"
-            )
+            ) from e

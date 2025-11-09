@@ -6,7 +6,7 @@ This module provides a flexible, stage-based pipeline for transforming notes.
 
 # Import core components
 # Import all stages to trigger registration
-from . import stages
+from . import stages  # noqa: F401
 from .core import (
     Context,
     FileContext,

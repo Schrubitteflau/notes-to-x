@@ -94,18 +94,21 @@ class LLMCaller(Stage[LLMCallerOptions]):
     def _generate_mock_response(self, ctx: Context) -> dict:
         """Generate mock LLM response for testing."""
         # Extract some info from context for realistic mock data
-        filename = ctx.file.name if ctx.file else "unknown.md"
+        filename: str = ctx.file.name if ctx.file else "unknown.md"
         date = ctx.note.metadata.get("date", "01/01/2024")
 
         # Extract a snippet from the note content
-        content = ctx.note.content[:100] if ctx.note.content else "Mock note content"
+        content: str = ctx.note.content[:100] if ctx.note.content else "Mock note content"
 
         return {
             "file": filename,
             "date": date,
             "results": [
                 {
-                    "summary": f"[MOCK] Extracted achievement from note (date: {date}). This is simulated output for testing without API calls.",
+                    "summary": (
+                        f"[MOCK] Extracted achievement from note (date: {date}).\n"
+                        f"This is simulated output for testing without API calls. Content: {content}"
+                    ),
                     "hard_skills": ["Python", "JavaScript", "API Design", "Testing"],
                     "soft_skills": ["Problem-solving", "Technical communication", "Time management"],
                 }

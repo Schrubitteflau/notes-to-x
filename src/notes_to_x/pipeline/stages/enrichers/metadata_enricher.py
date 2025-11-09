@@ -1,6 +1,5 @@
 """Add custom metadata to note from frontmatter or custom logic."""
 
-
 from pydantic import Field
 
 from ...core import Context, Stage, StageOptions, register_stage

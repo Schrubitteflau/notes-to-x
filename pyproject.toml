@@ -14,7 +14,11 @@ classifiers = [
 ]
 license = {text = "MIT"}
 dependencies = [
-  "typer"
+  "pydantic>=2.12.4",
+  "typer>=0.9.0",
+  "litellm>=1.79.1",
+  "python-dotenv>=1.0.0",
+  "pyyaml>=6.0",
 ]
 requires-python = ">= 3.11"
 

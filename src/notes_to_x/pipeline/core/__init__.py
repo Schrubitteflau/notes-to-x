@@ -3,6 +3,7 @@
 from .config import load_config_from_preset, load_pipeline_config
 from .context import Context, FileContext, MetaContext, NoteContext
 from .helpers import read_file_content
+from .logging import configure_logging, get_logger
 from .pipeline import Pipeline
 from .stage import Stage, StageOptions, get_stage, get_stage_info, list_stages, register_stage
 
@@ -21,4 +22,6 @@ __all__ = [
     "load_pipeline_config",
     "load_config_from_preset",
     "read_file_content",
+    "configure_logging",
+    "get_logger",
 ]

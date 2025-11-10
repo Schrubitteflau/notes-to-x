@@ -52,10 +52,10 @@ def extract_and_validate_date(
         - If invalid format: (None, error_msg)
 
     Examples:
-        >>> extract_and_validate_date("2024-01-15 notes", r"(\d{4}-\d{2}-\d{2})", "%Y-%m-%d")
+        >>> extract_and_validate_date("2024-01-15 notes", r"(\\d{4}-\\d{2}-\\d{2})", "%Y-%m-%d")
         ('2024-01-15', None)
 
-        >>> extract_and_validate_date("no date here", r"(\d{4}-\d{2}-\d{2})")
+        >>> extract_and_validate_date("no date here", r"(\\d{4}-\\d{2}-\\d{2})")
         (None, "No date found in: no date here")
     """
     match = re.search(pattern, text)

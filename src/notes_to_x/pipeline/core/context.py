@@ -5,6 +5,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Any, Literal
 
+from .logging import get_logger
+
 
 @dataclass
 class FileContext:
@@ -91,6 +93,18 @@ class Context:
             ctx.add_issue("No data found", self.name, severity=severity)
         """
         issue = {"stage": stage, "message": message, "timestamp": datetime.now().isoformat(), **extra}
+
+        # Log the issue with structured logging
+        logger = get_logger(__name__)
+        log_method = logger.error if severity == "error" else logger.warning
+        log_method(
+            "Pipeline issue",
+            stage=stage,
+            severity=severity,
+            message=message,
+            file=self.file.name if self.file else None,
+            **extra,
+        )
 
         if severity == "error":
             self.meta.errors.append(issue)

@@ -7,6 +7,7 @@ from litellm import completion
 from pydantic import Field
 
 from ...core import Context, Stage, StageOptions, register_stage
+from ...core.helpers import require_context_keys
 
 
 class LLMCallerOptions(StageOptions):
@@ -24,25 +25,18 @@ class LLMCaller(Stage[LLMCallerOptions]):
     """
     Call LLM via LiteLLM and store response.
 
-    Expects ctx.custom["system_prompt"] and ctx.custom["user_message"] to be set.
-    Stores response in ctx.note.results.
+    REQUIRES: ctx.custom["system_prompt"], ctx.custom["user_message"]
+    PRODUCES: ctx.note.results
     """
 
     Options = LLMCallerOptions
 
+    @require_context_keys("system_prompt", "user_message")
     def execute(self, ctx: Context) -> Context:
         """Call LLM and store response."""
-        # Get prompts from context
-        system_prompt = ctx.custom.get("system_prompt")
-        user_message = ctx.custom.get("user_message")
-
-        if not system_prompt:
-            ctx.add_issue("No system_prompt found in context", self.name, severity="error")
-            return ctx
-
-        if not user_message:
-            ctx.add_issue("No user_message found in context", self.name, severity="error")
-            return ctx
+        # Get prompts from context (guaranteed by decorator)
+        system_prompt = ctx.custom["system_prompt"]
+        user_message = ctx.custom["user_message"]
 
         # Build LLM request
         model = self.options.model

@@ -7,11 +7,21 @@ import sys
 from datetime import datetime
 
 import typer
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 
 from .pipeline.core import Context, Pipeline
 from .pipeline.core.config import load_pipeline_config
 from .pipeline.stages.sources.folder import FolderSource
+
+
+def _mask_sensitive_env_vars(env_dict: dict[str, str | None]) -> dict[str, str]:
+    """Mask sensitive environment variables for logging."""
+    sensitive_patterns = ["API_KEY", "SECRET", "PASSWORD", "TOKEN"]
+    return {
+        k: "***MASKED***" if any(pattern in k.upper() for pattern in sensitive_patterns) else (v or "")
+        for k, v in env_dict.items()
+    }
+
 
 app = typer.Typer(
     name="notes-to-x",
@@ -78,18 +88,9 @@ def run(
         if verbose:
             typer.echo(f"Loading environment from: {env_path}")
         load_dotenv(env_path)
-        # Capture loaded env vars (excluding sensitive API keys)
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    key, value = line.split("=", 1)
-                    key = key.strip()
-                    # Mask API keys
-                    if "API_KEY" in key or "SECRET" in key or "PASSWORD" in key:
-                        loaded_env_vars[key] = "***MASKED***"
-                    else:
-                        loaded_env_vars[key] = value.strip()
+        # Capture loaded env vars with proper parsing and masking
+        env_dict = dotenv_values(env_path)
+        loaded_env_vars = _mask_sensitive_env_vars(env_dict)
 
     # Load pipeline configuration
     try:

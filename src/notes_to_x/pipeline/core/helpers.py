@@ -2,8 +2,12 @@
 
 import re
 from datetime import datetime
+from functools import wraps
+from typing import Callable, TypeVar
 
 from .context import Context, NoteContext
+
+T = TypeVar("T", bound=Context)
 
 
 def read_file_content(ctx: Context, stage_name: str) -> str | None:
@@ -100,3 +104,53 @@ def create_segmented_contexts(
         contexts.append(new_ctx)
 
     return contexts if contexts else [base_ctx]
+
+
+def require_context_keys(*keys: str) -> Callable:
+    """
+    Decorator to validate required context keys before stage execution.
+
+    Checks that all specified keys exist in ctx.custom before executing
+    the decorated method. If any keys are missing, adds an error to the
+    context and returns without executing.
+
+    Args:
+        *keys: Variable number of key names required in ctx.custom
+
+    Returns:
+        Decorated function that validates context keys
+
+    Examples:
+        >>> class MyStage(Stage):
+        ...     @require_context_keys("system_prompt", "user_message")
+        ...     def execute(self, ctx: Context) -> Context:
+        ...         # Guaranteed to have both keys here
+        ...         prompt = ctx.custom["system_prompt"]
+        ...         return ctx
+
+    Usage in stage docstring:
+        '''
+        Stage that processes LLM responses.
+
+        REQUIRES: ctx.custom["system_prompt"], ctx.custom["user_message"]
+        PRODUCES: ctx.note.results
+        '''
+    """
+
+    def decorator(execute_func: Callable) -> Callable:
+        @wraps(execute_func)
+        def wrapper(self, ctx: T) -> T:
+            # Check for missing keys
+            missing = [k for k in keys if not ctx.custom.get(k)]
+            if missing:
+                ctx.add_issue(
+                    f"Missing required context keys: {', '.join(missing)}. Ensure previous stages set these values.",
+                    self.name,
+                    severity="error",
+                )
+                return ctx
+            return execute_func(self, ctx)
+
+        return wrapper
+
+    return decorator

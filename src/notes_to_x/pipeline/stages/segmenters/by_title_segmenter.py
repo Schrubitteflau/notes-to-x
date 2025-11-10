@@ -1,6 +1,7 @@
 """Segment markdown content by headers."""
 
 import re
+from typing import ClassVar, Pattern
 
 from pydantic import Field
 
@@ -23,6 +24,11 @@ class ByTitleSegmenter(Stage[ByTitleSegmenterOptions]):
     """
 
     Options = ByTitleSegmenterOptions
+
+    # Pre-compiled regex patterns for markdown headers (levels 1-6)
+    HEADER_PATTERNS: ClassVar[dict[int, Pattern[str]]] = {
+        level: re.compile(f"^{'#' * level}\\s+(.+)$") for level in range(1, 7)
+    }
 
     def execute(self, ctx: Context) -> list[Context]:
         """Split content by headers."""
@@ -48,9 +54,8 @@ class ByTitleSegmenter(Stage[ByTitleSegmenterOptions]):
         Returns:
             List of (title, content) tuples
         """
-        # Pattern for headers of exact level (e.g., # Title but not ## Title)
-        # Need to match start of line, exact number of #, space, then title
-        pattern = f"^{'#' * level}\\s+(.+)$"
+        # Use pre-compiled pattern for the specified level
+        pattern = self.HEADER_PATTERNS[level]
 
         segments = []
         lines = content.split("\n")
@@ -58,7 +63,7 @@ class ByTitleSegmenter(Stage[ByTitleSegmenterOptions]):
         current_content_lines = []
 
         for line in lines:
-            match = re.match(pattern, line)
+            match = pattern.match(line)
 
             if match:
                 # Found a header - save previous segment

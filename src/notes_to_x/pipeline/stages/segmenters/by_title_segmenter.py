@@ -4,7 +4,8 @@ import re
 
 from pydantic import Field
 
-from ...core import Context, NoteContext, Stage, StageOptions, register_stage
+from ...core import Context, Stage, StageOptions, register_stage
+from ...core.helpers import create_segmented_contexts
 
 
 class ByTitleSegmenterOptions(StageOptions):
@@ -38,12 +39,7 @@ class ByTitleSegmenter(Stage[ByTitleSegmenterOptions]):
             return [ctx]
 
         # Create one context per segment
-        contexts = []
-        for title, content in segments:
-            new_ctx = ctx.clone(note=NoteContext(title=title, content=content))
-            contexts.append(new_ctx)
-
-        return contexts
+        return create_segmented_contexts(ctx, segments)
 
     def _split_by_header(self, content: str, level: int) -> list[tuple[str, str]]:
         """

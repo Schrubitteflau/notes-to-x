@@ -1,11 +1,9 @@
 """Extract date from filename."""
 
-import re
-from datetime import datetime
-
 from pydantic import Field
 
 from ...core import Context, Stage, StageOptions, register_stage
+from ...core.helpers import extract_and_validate_date
 
 
 class DateFromFilenameEnricherOptions(StageOptions):
@@ -27,25 +25,15 @@ class DateFromFilenameEnricher(Stage[DateFromFilenameEnricherOptions]):
 
     def execute(self, ctx: Context) -> Context:
         """Extract date from filename."""
-        pattern = self.options.pattern
-        date_format = self.options.format
+        date_str, error_msg = extract_and_validate_date(
+            ctx.file.name,
+            self.options.pattern,
+            self.options.format,
+        )
 
-        match = re.search(pattern, ctx.file.name)
-        if not match:
-            ctx.add_issue(f"No date found in filename: {ctx.file.name}", self.name, severity="warning")
+        if error_msg:
+            ctx.add_issue(error_msg, self.name, severity="warning")
             return ctx
-
-        date_str = match.group(1) if match.groups() else match.group(0)
-
-        # Validate format if provided
-        if date_format:
-            try:
-                datetime.strptime(date_str, date_format)
-            except ValueError as e:
-                ctx.add_issue(
-                    f"Date '{date_str}' doesn't match format '{date_format}': {e}", self.name, severity="error"
-                )
-                return ctx
 
         ctx.note.date = date_str
         return ctx

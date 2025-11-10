@@ -1,8 +1,9 @@
 """Prompt building from Jinja2 templates."""
 
 import os
+from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound
+from jinja2 import ChoiceLoader, Environment, FileSystemLoader, Template, TemplateNotFound
 from pydantic import Field
 
 from ...core import Context, Stage, StageOptions, register_stage
@@ -28,6 +29,24 @@ class PromptBuilder(Stage[PromptBuilderOptions]):
     """
 
     Options = PromptBuilderOptions
+
+    def __init__(self, options: dict):
+        """Initialize with Jinja2 environment."""
+        super().__init__(options)
+        self._jinja_env = self._setup_jinja_env()
+
+    def _setup_jinja_env(self) -> Environment:
+        """Set up Jinja2 with multiple template search paths."""
+        # Package templates directory
+        package_templates = Path(__file__).parent.parent.parent / "templates"
+
+        # Search paths: CWD first, then package templates
+        loaders = [
+            FileSystemLoader("."),  # Current working directory
+            FileSystemLoader(str(package_templates)),  # Package templates
+        ]
+
+        return Environment(loader=ChoiceLoader(loaders))
 
     def execute(self, ctx: Context) -> Context:
         """Render prompt template."""
@@ -82,41 +101,30 @@ class PromptBuilder(Stage[PromptBuilderOptions]):
         }
 
     def _render_from_file(self, template_name: str, context: dict) -> str:
-        """Render template from file.
-
-        Looks for templates in this order:
-        1. Absolute path
-        2. Relative to current working directory
-        3. Package templates directory (for backward compatibility)
         """
-        # Try absolute path or relative to cwd first
+        Render template from file.
+
+        For absolute paths, loads from that specific directory.
+        For relative paths, searches CWD first, then package templates.
+        """
+        # Handle absolute paths specially
         if os.path.isabs(template_name):
-            template_path = template_name
-        else:
-            template_path = os.path.abspath(template_name)
+            template_path = Path(template_name)
+            if not template_path.exists():
+                raise FileNotFoundError(f"Template not found: {template_name}")
 
-        if os.path.exists(template_path):
-            # Load from absolute/cwd path
-            template_dir = os.path.dirname(template_path)
-            template_file = os.path.basename(template_path)
-            env = Environment(loader=FileSystemLoader(template_dir or "."))
+            env = Environment(loader=FileSystemLoader(str(template_path.parent)))
             try:
-                template = env.get_template(template_file)
+                template = env.get_template(template_path.name)
                 return template.render(context)
-            except TemplateNotFound:
-                pass
+            except TemplateNotFound as e:
+                raise FileNotFoundError(f"Template not found: {template_name}") from e
 
-        # Fall back to package templates directory
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        pipeline_dir = os.path.dirname(os.path.dirname(current_dir))
-        templates_dir = os.path.join(pipeline_dir, "templates")
-
-        env = Environment(loader=FileSystemLoader(templates_dir))
-
+        # Use shared environment for relative paths (searches CWD and package templates)
         try:
-            template = env.get_template(template_name)
+            template = self._jinja_env.get_template(template_name)
             return template.render(context)
         except TemplateNotFound as e:
             raise FileNotFoundError(
-                f"Template not found: {template_name}\n  Searched in: {template_path}, {templates_dir}"
+                f"Template '{template_name}' not found in current directory or package templates"
             ) from e

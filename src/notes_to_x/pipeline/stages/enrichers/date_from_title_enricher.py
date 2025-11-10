@@ -1,11 +1,9 @@
 """Extract date from note title."""
 
-import re
-from datetime import datetime
-
 from pydantic import Field
 
 from ...core import Context, Stage, StageOptions, register_stage
+from ...core.helpers import extract_and_validate_date
 
 
 class DateFromTitleEnricherOptions(StageOptions):
@@ -36,29 +34,19 @@ class DateFromTitleEnricher(Stage[DateFromTitleEnricherOptions]):
             )
             return ctx
 
-        pattern = self.options.pattern
-        date_format = self.options.format
+        date_str, error_msg = extract_and_validate_date(
+            ctx.note.title,
+            self.options.pattern,
+            self.options.format,
+        )
 
-        match = re.search(pattern, ctx.note.title)
-        if not match:
+        if error_msg:
             ctx.add_issue(
-                f"No date found in title: {ctx.note.title}",
+                error_msg,
                 self.name,
                 severity="error" if self.options.required else "warning",
             )
             return ctx
-
-        date_str = match.group(1) if match.groups() else match.group(0)
-
-        # Validate format if provided
-        if date_format:
-            try:
-                datetime.strptime(date_str, date_format)
-            except ValueError as e:
-                ctx.add_issue(
-                    f"Date '{date_str}' doesn't match format '{date_format}': {e}", self.name, severity="error"
-                )
-                return ctx
 
         ctx.note.date = date_str
         return ctx

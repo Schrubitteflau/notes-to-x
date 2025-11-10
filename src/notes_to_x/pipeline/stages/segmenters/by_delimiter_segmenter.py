@@ -4,7 +4,8 @@ import re
 
 from pydantic import Field
 
-from ...core import Context, NoteContext, Stage, StageOptions, register_stage
+from ...core import Context, Stage, StageOptions, register_stage
+from ...core.helpers import create_segmented_contexts
 
 
 class ByDelimiterSegmenterOptions(StageOptions):
@@ -30,14 +31,8 @@ class ByDelimiterSegmenter(Stage[ByDelimiterSegmenterOptions]):
         pattern = self.options.pattern
         parts = re.split(pattern, ctx.file.content, flags=re.MULTILINE)
 
-        # Create one context per part
-        contexts = []
-        for i, part in enumerate(parts):
-            part = part.strip()
-            if not part:
-                continue
+        # Create segments with numbered titles
+        segments = [(f"Segment {i + 1}", part) for i, part in enumerate(parts)]
 
-            new_ctx = ctx.clone(note=NoteContext(title=f"Segment {i + 1}", content=part))
-            contexts.append(new_ctx)
-
-        return contexts if contexts else [ctx]
+        # Create one context per segment (filters empty content)
+        return create_segmented_contexts(ctx, segments)

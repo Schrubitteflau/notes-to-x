@@ -98,6 +98,7 @@ class PromptBuilder(Stage[PromptBuilderOptions]):
                 "metadata": ctx.note.metadata,
             },
             **ctx.custom,  # Include any custom data set by previous stages
+            **os.environ,  # Include environment variables for template access
         }
 
     def _render_from_file(self, template_name: str, context: dict) -> str:

@@ -1,0 +1,13 @@
+est-ce qu'il peut y avoir des erreurs dans la phase de collection ? ici, folderread
+
+et enfin, ajouter une dernière étape optionnelle permettant de consolider l'entièreté des résultats: par exemple, demander à un LLM "Deduplicate and consolidate all skills into final résumé-ready bullet points. Group by category. Keep the strongest examples."
+propose-moi une architecture adéquate pour faire cela. De plus, je pense qu'on devrait renommer les fichiers: result.json -> execution_details.json, output.json -> results.json, et ajouter un dernier fichier pour les résultats consolidés : consolidated.json
+
+just qa
+type hinting explicite
+rendre le code moins "LLM"
+meilleure doc
+test avec vrai llm
+
+cd worknotes
+uv run notes_to_x run pipeline.yaml --source notes/Novembre.md
